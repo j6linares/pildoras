@@ -25,8 +25,8 @@ public class EjecucionTransferencias implements Runnable {
 			Random r = new Random();
 			int destino = r.nextInt(100);
 			double cantidad=importeMaximo*Math.random();
-			banco.transferencia(cuenta, destino, cantidad);
 			try {
+				banco.transferenciaSincronizada(cuenta, destino, cantidad);
 				Thread.sleep((new Random()).nextInt(10));
 			} catch (InterruptedException e) {
 				Bitacora.LOG.severe(e.toString());
