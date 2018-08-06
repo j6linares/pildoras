@@ -4,7 +4,7 @@ package sockets;
 
 import javax.swing.*;
 
-import sockets.cliente.ClienteServidor;
+import sockets.chat.ClienteServidor;
 
 import java.awt.*;
 

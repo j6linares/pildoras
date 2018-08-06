@@ -8,7 +8,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.*;
 
-import sockets.cliente.ClienteServidor;
+import sockets.chat.ClienteServidor;
 
 
 public class Cliente {
@@ -107,7 +107,7 @@ class LaminaMarcoCliente extends JPanel implements Runnable{
 				System.out.println(e1.getMessage());
 				e1.printStackTrace();
 			}*/
-			sockets.cliente.ClienteServidor clte = new sockets.cliente.ClienteServidor();
+			sockets.chat.ClienteServidor clte = new sockets.chat.ClienteServidor();
 			clte.setIp("192.168.56.1");
 			clte.setPuerto(9999);
 			clte.setMsg(campo1.getText());
