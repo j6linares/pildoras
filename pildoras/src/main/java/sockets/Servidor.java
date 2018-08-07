@@ -21,6 +21,12 @@ public class Servidor  {
 
 class MarcoServidor extends JFrame implements Runnable {
 	
+	private static final long serialVersionUID = 1L;
+	private	JTextArea areatexto;
+	private ClienteServidor serv=new ClienteServidor();;
+
+
+	//constructor
 	public MarcoServidor(){
 		
 		setBounds(1200,300,280,350);				
@@ -42,8 +48,7 @@ class MarcoServidor extends JFrame implements Runnable {
 		
 		}
 	
-	private	JTextArea areatexto;
-
+	//run
 	@Override
 	public void run() {
 		/*System.out.println("estoy a la escucha!");
@@ -65,19 +70,36 @@ class MarcoServidor extends JFrame implements Runnable {
 		} finally {
 			
 		}*/
+		System.out.println("estoy a la escucha de objetos  ");
+		
 		while (true) {
-			ClienteServidor serv = new ClienteServidor();
-			serv.setPuerto(9999); //recibe por el puerto 9999
+			serv.setPuerto(9999); //escucha por el puerto 9999
 			//areatexto.append("\n"+serv.recibirMensaje());
 			Paquete paquete = (Paquete) serv.recibirObjeto();
-			serv.setPaquete(paquete);
 			System.out.println("Recibir paquete en el servidor: "+serv);
-			areatexto.append("\n"+paquete.getNick()+": "+paquete.getMensaje()+" para "+paquete.getIp());
-			//re-enviar el paquete al cliente destinatario
-			serv.setPuerto(9090); //envia por el puerto 9090
-			serv.setIp(paquete.getIp()); //a la ip del paquete recibido
-			System.out.println("Enviar paquete desde servidor: "+serv);
-			serv.enviarMensaje();
+			System.out.println("Paquete recibido en el servidor: "+paquete);
+			if (paquete == null) {
+				serv.setPuerto(9090); //envia por el puerto 9090
+				//enviar a todos los clientes la lista de ips
+				for (String ip: serv.getClientes()) {
+					serv.setIp(ip); //a la ip del cliente
+					paquete=new Paquete("ips"); //mensaje ips conectadas
+					paquete.setIps(serv.getClientes());
+					serv.setPaquete(paquete);
+					
+					System.out.println("Enviar paquete de ips conectadas desde el servidor al cliente: "+serv);
+					serv.enviarMensaje();
+				} 
+			} else {
+				areatexto.append("\n"+paquete.getNick()+": "+paquete.getMensaje()+" para "+paquete.getIp());
+				//re-enviar el paquete al cliente destinatario
+				serv.setPuerto(9090); //envia por el puerto 9090
+				serv.setIp(paquete.getIp()); //a la ip destino del paquete recibido
+				serv.setPaquete(paquete);
+				
+				System.out.println("Enviar paquete recibido del cliente desde el servidor al destinatario: "+serv);
+				serv.enviarMensaje();
+			}
 		}
 		
 	}

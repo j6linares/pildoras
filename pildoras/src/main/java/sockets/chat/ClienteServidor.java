@@ -3,8 +3,11 @@ package sockets.chat;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 import sockets.Paquete;
 
@@ -14,6 +17,7 @@ public class ClienteServidor {
 	private int puerto;
 	private String msg;
 	private Object paquete;
+	private List<String> clientes = new ArrayList<String>();
 	
 	public void enviarMensaje(){
 		
@@ -44,6 +48,9 @@ public class ClienteServidor {
 			ObjectInputStream flujoEntrada = new ObjectInputStream(socket.getInputStream());
 			msgTexto = ((Paquete) flujoEntrada.readObject()).getMensaje();
 			flujoEntrada.close();
+			
+			//detectar cliente conectado
+			guardarClienteConectado(socket);
 				
 			socket.close();
 			servidor.close();
@@ -59,15 +66,18 @@ public class ClienteServidor {
 	}
 	
 	public Object recibirObjeto(){
-		System.out.println("estoy a la escucha de objetos por el puerto: "+this.puerto);
 		Object obj=null;
 		try {
 			ServerSocket servidor = new ServerSocket(this.puerto);
 			Socket socket = servidor.accept();
-				
+			
 			ObjectInputStream flujoEntrada = new ObjectInputStream(socket.getInputStream());
 			obj = flujoEntrada.readObject();
 			flujoEntrada.close();
+			
+			//detectar cliente conectado
+			if (obj == null)
+				guardarClienteConectado(socket);
 				
 			socket.close();
 			servidor.close();
@@ -81,6 +91,23 @@ public class ClienteServidor {
 		}
 		return obj;
 	}
+	
+	private void guardarClienteConectado(Socket socket) {
+		
+		//detectar la ip del cliente
+		InetAddress iaCliente = socket.getInetAddress();
+		String ipCliente = iaCliente.getHostAddress();
+		if (!clientes.contains(ipCliente)) {
+			System.out.println("Nuevo cliente conectado al servidor desde la ip="+ipCliente);
+			clientes.add(ipCliente);
+		} 
+		System.out.println("clientes conectados:");
+		for (String ip : clientes) {
+			System.out.println(ip);
+		}
+		
+	}
+
 	//getter+setter
 	public String getIp() {
 		return ip;
@@ -108,11 +135,22 @@ public class ClienteServidor {
 	public void setPaquete(Object paquete) {
 		this.paquete = paquete;
 	}
+	
+	public List<String> getClientes() {
+		return clientes;
+	}
+
+	public void setClientes(List<String> clientes) {
+		this.clientes = clientes;
+	}
 
 	@Override
 	public String toString() {
-		return "ClienteServidor [ip=" + ip + ", puerto=" + puerto + ", msg=" + msg + ", paquete=" + paquete + "]";
+		return "ClienteServidor [ip=" + ip + ", puerto=" + puerto + ", msg=" + msg + ", paquete=" + paquete
+				+ ", clientes=" + clientes + "]";
 	}
+
+	
 	
 	
 

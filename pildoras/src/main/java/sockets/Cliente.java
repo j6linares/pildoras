@@ -5,6 +5,8 @@ package sockets;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.*;
 
@@ -26,6 +28,8 @@ public class Cliente {
 
 class MarcoCliente extends JFrame  {
 	
+	private static final long serialVersionUID = 1L;
+
 	public MarcoCliente(){
 		
 		setBounds(600,300,280,350);
@@ -35,25 +39,56 @@ class MarcoCliente extends JFrame  {
 		add(milamina);
 		
 		setVisible(true);
+		
+		addWindowListener(new EnvioOnline());
 		}
+	
+}
 
+class EnvioOnline extends WindowAdapter {
 	
-	
+	public void windowOpened(WindowEvent evento) {
+		ClienteServidor clte = new ClienteServidor();
+		clte.setIp("192.168.1.38"); //ip del servidor eth
+		clte.setPuerto(9999);
+		clte.setMsg("online");
+		
+		System.out.println("Enviar paquete de conexion al servidor desde cliente: "+clte);
+		clte.enviarMensaje();
+		
+	}
 }
 
 class LaminaMarcoCliente extends JPanel implements Runnable{
 	
-	public LaminaMarcoCliente(){
+	private static final long serialVersionUID = 1L;
 	
-		nick=new JTextField(8);
+	private JTextField campo1;
+	private JLabel nick;
+	private JComboBox<String> ip;
+	private	JTextArea areatexto;
+
+	private JButton miboton;
+
+	public LaminaMarcoCliente(){
+		
+		String nick_usuario = JOptionPane.showInputDialog("Nick: ");
+		JLabel n_nick =new JLabel("Nick: ");
+		add(n_nick);
+	
+		nick=new JLabel();
+		nick.setText(nick_usuario);
 		
 		add(nick);	
 		
-		JLabel texto=new JLabel("chat");
+		JLabel texto=new JLabel(" Online:");
 		
 		add(texto);
 		
-		ip=new JTextField(8);
+		ip=new JComboBox<String>();
+		ip.addItem("192.168.1.61");
+		ip.addItem("192.168.1.38");
+		ip.addItem("192.168.1.56");
 		
 		add(ip);	
 		
@@ -79,6 +114,7 @@ class LaminaMarcoCliente extends JPanel implements Runnable{
 		
 	}
 	
+	
 	@Override
 	public void run() {
 		while (true) {
@@ -87,11 +123,24 @@ class LaminaMarcoCliente extends JPanel implements Runnable{
 			//areatexto.append("\n"+serv.recibirMensaje());
 			Paquete paquete = (Paquete) serv.recibirObjeto();
 			System.out.println("Recibir paquete en cliente: "+serv);
-			areatexto.append("\n"+paquete.getNick()+": "+paquete.getMensaje()+" para "+paquete.getIp());
+			System.out.println("Paquete recibido en cliente: "+paquete);
+			if (paquete != null && paquete.getMensaje().equals("ips")) {
+				ip.removeAllItems();
+				//mensaje de ips conectadas
+				System.out.println("clientes conectados al chat");
+				for (String s : paquete.getIps()) {
+					System.out.println(""+s);
+					ip.addItem(s);
+				}
+			} else {
+				//paquete de cliente a cliente
+				areatexto.append("\n"+paquete.getNick()+": "+paquete.getMensaje()+" para "+paquete.getIp());
+			}
 			
 		}
 		
 	}	
+	
 	private class EnviarTexto implements ActionListener {
 
 		@Override
@@ -107,13 +156,14 @@ class LaminaMarcoCliente extends JPanel implements Runnable{
 				System.out.println(e1.getMessage());
 				e1.printStackTrace();
 			}*/
-			sockets.chat.ClienteServidor clte = new sockets.chat.ClienteServidor();
-			clte.setIp("192.168.56.1");
+			ClienteServidor clte = new ClienteServidor();
+			clte.setIp("192.168.1.38"); //ethernet
+			//clte.setIp("127.0.0.1"); //ip del servidor
 			clte.setPuerto(9999);
 			clte.setMsg(campo1.getText());
 			
 			Paquete paquete = new Paquete(campo1.getText());
-			paquete.setIp(ip.getText());
+			paquete.setIp(ip.getSelectedItem().toString());
 			paquete.setNick(nick.getText());
 			
 			clte.setPaquete(paquete);
@@ -121,21 +171,11 @@ class LaminaMarcoCliente extends JPanel implements Runnable{
 			clte.enviarMensaje();
 			areatexto.append("\n"+paquete.getNick()+": "+paquete.getMensaje()+" para "+paquete.getIp());
 			
-			System.out.println(campo1.getText());
+			System.out.println("Texto enviado: "+campo1.getText());
 			
 		}
 		
 	}
-	
 		
-		
-		
-	private JTextField campo1;
-	private JTextField nick;
-	private JTextField ip;
-	private	JTextArea areatexto;
-	
-	private JButton miboton;
-	
 }
 
