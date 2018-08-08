@@ -6,6 +6,13 @@
   <name>pildoras informaticas</name>
   <description>java desde 0</description>
   <dependencies>
+  	<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+	<dependency>
+    	<groupId>mysql</groupId>
+    	<artifactId>mysql-connector-java</artifactId>
+    	<version>5.1.38</version>
+	</dependency>
+  
   	<!-- https://mvnrepository.com/artifact/junit/junit -->
 	<dependency>
     	<groupId>junit</groupId>
