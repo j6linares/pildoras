@@ -7,14 +7,14 @@ import java.sql.SQLException;
 public class ConexionDB {
 	
 	private Connection conn=null;
-	private static String url="jdbc:mysql://localhost:3306/jdbcdbjava";
+	private static String url="jdbc:mysql://madppvlkin:3306/mysqldesa";
 	private static String driver = "jdbc";
 	private static String protocolo = "mysql";
-	private static String servidorDB = "localhost";
+	private static String servidorDB = "madppvlkin";
 	private static String puertoDB = "3306";
-	private static String DB = "jdbcdbjava";
-	private static String usuarioDB = "root";
-	private static String passwdDB = "mysqldesa";
+	private static String DB = "mysqldesa";
+	private static String usuarioDB = "mysqldesa";
+	private static String passwdDB = "mysqld3s4";
 	
 	public ConexionDB() {
 		

@@ -1,3 +1,8 @@
+CREATE TABLE mitabla (
+	nombre VARCHAR(45) NOT NULL,
+	apellidos VARCHAR(45) NOT NULL
+) 
+;
 SELECT * FROM mitabla
 ;
 INSERT INTO mitabla (nombre, apellidos) 

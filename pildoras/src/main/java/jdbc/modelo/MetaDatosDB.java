@@ -28,7 +28,7 @@ public class MetaDatosDB {
 
 	}
 	
-	private static void leerRs(ResultSet rs) throws SQLException {
+	public static void leerRs(ResultSet rs) throws SQLException {
 		
 		if (rs == null) {
 			System.out.println("Resulset vacio!");
