@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-public class PaginacionRS {
+public class PaginacionRS implements Paginable {
 	//cursor
 	private ResultSet rs;
 	private ResultSetMetaData rsMetaData;
@@ -40,8 +40,8 @@ public class PaginacionRS {
 		//cursor=rs.getCursorName();
 		
 		//configuracion por defecto
-		nroLinxPag=10;
-		nroPagxBloq=20;
+		nroLinxPag=Integer.MAX_VALUE;
+		nroPagxBloq=Integer.MAX_VALUE;
 		circular=false;
 		
 		//datos del cursor 
@@ -97,16 +97,16 @@ public class PaginacionRS {
 			posicionNroFila(nroFila);
 		}	
 	}
-	
-	public void irABloque(int bloq) throws SQLException {
+	@Override
+	public void irABloque(int bloq) {
 		posicionNroBloque(bloq);
 	}
-	
-	public void irAPagina(int pag) throws SQLException {
+	@Override
+	public void irAPagina(int pag) {
 		posicionNroPagina(pag);
 	}
-	
-	public void irAPaginaBloque(int pag) throws SQLException {
+	@Override
+	public void irAPaginaBloque(int pag) {
 		posicionNroPaginaBloque(pag);
 	}
 	
@@ -152,11 +152,13 @@ public class PaginacionRS {
 				irAFila(this.nroFila+1);
 		}
 	}
+	@Override
 	public int primeraPagina(){
 		if (this.nroPaginas>0)
 			return 1;
 		else return this.nroPaginas;
 	}
+	@Override
 	public int siguientePagina(){
 		if (this.nroPagina<this.nroPaginas)
 			return this.nroPagina+1;
@@ -165,6 +167,7 @@ public class PaginacionRS {
 		else 
 			return this.nroPagina;
 	}
+	@Override
 	public int paginaAnterior(){
 		if (this.nroPagina>1)
 			return this.nroPagina-1;
@@ -173,14 +176,17 @@ public class PaginacionRS {
 		else 
 			return this.nroPagina;
 	}
+	@Override
 	public int ultimaPagina(){
 		return this.nroPaginas;
 	}
+	@Override
 	public int primeraPaginaBloque(){
 		if (this.nroPaginasBloque>0)
 			return 1;
 		else return this.nroPaginasBloque;
 	}
+	@Override
 	public int siguientePaginaBloque(){
 		if (this.nroPaginaBloque<this.nroPaginasBloque)
 			return this.nroPaginaBloque+1;
@@ -189,6 +195,7 @@ public class PaginacionRS {
 		else 
 			return this.nroPaginaBloque;
 	}
+	@Override
 	public int paginaAnteriorBloque(){
 		if (this.nroPaginaBloque>1)
 			return this.nroPaginaBloque-1;
@@ -197,14 +204,17 @@ public class PaginacionRS {
 		else
 			return this.nroPaginaBloque;
 	}
+	@Override
 	public int ultimaPaginaBloque(){
 		return this.nroPaginasBloque;
 	}
+	@Override
 	public int primerBloque(){
 		if (this.nroBloques>0)
 			return 1;
 		else return this.nroBloques;
 	}
+	@Override
 	public int siguienteBloque(){
 		if (this.nroBloque<this.nroBloques)
 			return this.nroBloque+1;
@@ -213,6 +223,7 @@ public class PaginacionRS {
 		else
 			return this.nroBloque;
 	}
+	@Override
 	public int bloqueAnterior(){
 		if (this.nroBloque>1)
 			return this.nroBloque-1;
@@ -221,11 +232,12 @@ public class PaginacionRS {
 		else 
 			return this.nroBloque;
 	}
+	@Override
 	public int ultimoBloque(){
 		return this.nroBloques;
 	}
 	//lógica
-	private void posicionNroBloque(int nroBloque) throws SQLException {
+	private void posicionNroBloque(int nroBloque) {
 		if (nroBloque==0 || nroBloque>nroBloques) {
 			throw new IndexOutOfBoundsException("Nº de bloque fuera de límites");
 		}
@@ -233,7 +245,7 @@ public class PaginacionRS {
 		posicionNroFila((nroBloque-1)*(nroLinxPag * nroPagxBloq)+1);
 	}
 	
-	private void posicionNroPagina(int nroPagina) throws SQLException {
+	private void posicionNroPagina(int nroPagina) {
 		if (nroPagina==0 || nroPagina>nroPaginas) {
 			throw new IndexOutOfBoundsException("Nº de página fuera de los límites");
 		}
@@ -241,7 +253,7 @@ public class PaginacionRS {
 		posicionNroFila(((nroPagina-1)*nroLinxPag)+1);
 	}
 	
-	private void posicionNroPaginaBloque(int nroPagina) throws SQLException {
+	private void posicionNroPaginaBloque(int nroPagina) {
 		if (nroPagina==0 || nroPagina>nroPaginasBloque) {
 			throw new IndexOutOfBoundsException("Nº de página fuera de los límites del bloque");
 		}
@@ -249,7 +261,7 @@ public class PaginacionRS {
 		posicionNroFila(((nroBloque-1)*(nroLinxPag * nroPagxBloq))+((nroPagina-1)*nroLinxPag)+1);
 	}
 	
-	private void posicionNroLinea(int nroLinea) throws SQLException {
+	private void posicionNroLinea(int nroLinea) {
 		if (nroLinea==0 || nroLinea>nroLineasPagina) {
 			throw new IndexOutOfBoundsException("Nº de línea fuera de los límites de la página");
 		}
@@ -257,7 +269,7 @@ public class PaginacionRS {
 		posicionNroFila(((nroBloque-1)*(nroLinxPag * nroPagxBloq))+((nroPaginaBloque-1)*nroLinxPag)+nroLinea);
 	}
 	
-	private void posicionNroFila(int nroFila) throws SQLException {
+	private void posicionNroFila(int nroFila) {
 		if (nroFila==0 || nroFila>nroFilas) {
 			nroBloque=0;
 			nroPaginaBloque=0;
@@ -291,7 +303,11 @@ public class PaginacionRS {
 			this.nroLineasPagina=lineasDePagina(this.nroPaginaBloque);
 			
 			//posicionamos el cursor en la fila
-			rs.absolute(nroFila);
+			try {
+				rs.absolute(nroFila);
+			} catch (SQLException sqle) {
+				throw new IndexOutOfBoundsException(sqle.getMessage());
+			}
 			
 		}
 	}
@@ -381,38 +397,49 @@ public class PaginacionRS {
 	}
 
 	//datos del cursor
+	@Override
 	public int getNroColumnas() {
 		return nroColumnas;
 	}
+	@Override
 	public int getNroFilas() {
 		return nroFilas;
 	}
+	@Override
 	public int getNroPaginas() {
 		return nroPaginas;
 	}
+	@Override
 	public int getNroBloques() {
 		return nroBloques;
 	}
 	
 	//datos de posicion
+	@Override
 	public int getNroBloque() {
 		return nroBloque;
 	}
+	@Override
 	public int getNroPaginaBloque() {
 		return nroPaginaBloque;
 	}
+	@Override
 	public int getNroPaginasBloque() {
 		return nroPaginasBloque;
 	}
+	@Override
 	public int getNroPagina() {
 		return nroPagina;
 	}
+	@Override
 	public int getNroLineaPagina() {
 		return nroLineaPagina;
 	}
+	@Override
 	public int getNroLineasPagina() {
 		return nroLineasPagina;
 	}
+	@Override
 	public int getNroFila() {
 		return nroFila;
 	}
@@ -435,6 +462,16 @@ public class PaginacionRS {
 				+ ", nroPagxBloq=" + nroPagxBloq 
 				+ ", nroColumnas=" + nroColumnas 
 				+ "]";
+	}
+
+	@Override
+	public int getNroPaginasxBloque() {
+		return this.nroPagxBloq;
+	}
+
+	@Override
+	public int getNroLineasxPagina() {
+		return this.nroLinxPag;
 	}
 
 	

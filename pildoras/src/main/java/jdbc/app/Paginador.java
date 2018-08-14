@@ -15,8 +15,6 @@ public class Paginador {
 		System.out.println("Paginador");
 		Scanner input = new Scanner(System.in);
 		
-		
-		
 		Connection conn;
 		try {
 			conn=(new ConexionDB()).conectaDB("jdbc:mysql://madppvlkin:3306/mysqldesa", "mysqldesa", "mysqld3s4");
@@ -106,11 +104,9 @@ public class Paginador {
 			System.out.println("ErrorCode="+e.getErrorCode() );
 			System.out.println("Message="+e.getMessage() );
 			e.printStackTrace();
+		} finally {
+			input.close();
 		}
-		
-		
-		
-
 	}
 
 }
