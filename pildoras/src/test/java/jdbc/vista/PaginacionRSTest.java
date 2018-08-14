@@ -84,8 +84,8 @@ public class PaginacionRSTest {
 		String[] types = null;
 		ResultSet rsT = dbMetaData.getTables(catalog, schemaPattern, tableNamePattern, types);
 		PaginacionRS pagina=new PaginacionRS(rsT);
-		pagina.setNroLinxPag(5);
-		pagina.setNroPagxBloq(5);
+		pagina.setNroLinxPag(3);
+		pagina.setNroPagxBloq(7);
 		pagina.calcularPaginacion();
 		System.out.println("Paginacion de filas:");
 		for (int f = 1; f <= pagina.getNroFilas(); f++) {
@@ -131,6 +131,34 @@ public class PaginacionRSTest {
 //		String columnNamePattern = null;
 //		ResultSet rsC = dbMetaData.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
 //		leerRs(rsC);
+		assertTrue(true);
+		
+	}
+	
+	@Test
+	public void test5() throws SQLException {
+		DatabaseMetaData dbMetaData = conn.getMetaData();
+		assertTrue("Gestor de DB: "+dbMetaData.getDatabaseProductName()
+					, "MySQL".equals(dbMetaData.getDatabaseProductName()));
+		System.out.println("Version del gestor: "+dbMetaData.getDatabaseProductVersion());
+		System.out.println("Driver de DB: "+dbMetaData.getDriverName());
+		System.out.println("Version del driver: "+dbMetaData.getDriverVersion());
+		
+		String catalog = null;
+		String schemaPattern = null;
+		String tableNamePattern = "%";
+		String[] types = null;
+		ResultSet rsT = dbMetaData.getTables(catalog, schemaPattern, tableNamePattern, types);
+		PaginacionRS pagina=new PaginacionRS(rsT);
+		pagina.setNroLinxPag(3);
+		pagina.setNroPagxBloq(7);
+		pagina.calcularPaginacion();
+		
+		System.out.println("Paginacion de páginas:");
+		for (int p = 1; p <= pagina.getNroPaginas(); p++) {
+			pagina.mostrarPagina(p);
+		}
+		
 		assertTrue(true);
 		
 	}

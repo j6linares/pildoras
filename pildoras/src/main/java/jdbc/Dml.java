@@ -21,7 +21,7 @@ public class Dml {
 			// 3. execute
 				String query = "INSERT INTO mitabla (nombre, apellidos) VALUES ('Julian', 'Garcia Linares') ";
 				System.out.println("numero de filas insertadas "+st.executeUpdate(query));
-				query = "UPDATE mitabla SET apellidos = 'Garc√≠a Linares' WHERE nombre = 'Julian'";
+				query = "UPDATE mitabla SET apellidos = 'GarcÌa Linares' WHERE nombre = 'Julian'";
 				System.out.println("numero de filas actualizadas "+st.executeUpdate(query));
 				query = "SELECT * FROM mitabla";
 				ResultSet rs = st.executeQuery(query);
@@ -36,7 +36,7 @@ public class Dml {
 			// 5. PreparedStatement
 				query = "SELECT * FROM mitabla WHERE nombre = ?";
 				PreparedStatement pst = conn.prepareStatement(query);
-				pst.setString(1, "Juli√°n");
+				pst.setString(1, "Juli·n");
 				leerRs(pst.executeQuery());
 				
 		} catch (SQLException e) {

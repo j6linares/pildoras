@@ -22,19 +22,8 @@ public class ConexionDB {
 	
 	
 	public Connection conectaDB(String url, String usuario, String passwd) throws SQLException {
-		try {
-			// 1. conexion
-			conn = DriverManager.getConnection(url, usuario, passwd);
-			
-		} catch (SQLException e) {
-//			System.out.println("Error SQL! "+url);
-//			System.out.println("SQLState="+e.getSQLState());
-//			System.out.println("ErrorCode="+e.getErrorCode() );
-//			System.out.println("Message="+e.getMessage() );
-//			e.printStackTrace();
-			throw e;
-		}
-		
+		// 1. conexion
+		conn = DriverManager.getConnection(url, usuario, passwd);	
 		return conn;
 	}
 	

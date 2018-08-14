@@ -13,6 +13,7 @@ public class PaginacionRS {
 	//configuración de la paginación 
 	private int nroLinxPag;
 	private int nroPagxBloq;
+	private boolean circular;
 	
 	//datos de posición
 	private int nroBloque;
@@ -41,13 +42,13 @@ public class PaginacionRS {
 		//configuracion por defecto
 		nroLinxPag=10;
 		nroPagxBloq=20;
+		circular=false;
 		
 		//datos del cursor 
 		nroColumnas=rsMetaData.getColumnCount();
 		calcularPaginacion();
 
 	}
-	
 	
 	//metodos
 	public void recalcularPaginacion(int pagxbloq, int linxpag) throws SQLException{
@@ -60,6 +61,7 @@ public class PaginacionRS {
 		}
 	
 	}
+	
 	public void calcularPaginacion() throws SQLException{
 		//posicionamos el cursor al ppio
 		rs.beforeFirst();
@@ -97,17 +99,14 @@ public class PaginacionRS {
 	}
 	
 	public void irABloque(int bloq) throws SQLException {
-		//posicionNroFila((bloq-1)*(nroLinxPag*nroPagxBloq)+1);
 		posicionNroBloque(bloq);
 	}
 	
 	public void irAPagina(int pag) throws SQLException {
-		//posicionNroFila((pag-1)*nroLinxPag+1);
 		posicionNroPagina(pag);
 	}
 	
 	public void irAPaginaBloque(int pag) throws SQLException {
-		//irAPagina((nroBloque-1)*nroPagxBloq+pag);
 		posicionNroPaginaBloque(pag);
 	}
 	
@@ -119,7 +118,112 @@ public class PaginacionRS {
 		posicionNroFila(fila);
 	}
 	
-
+	public void mostrarPaginaBloque(int pagBloque) throws SQLException {
+		mostrarPagina((this.nroBloque-1)*this.nroPagxBloq+pagBloque);
+		
+	}
+	public void mostrarPrimeraPaginaBloque(int bloque) throws SQLException {
+		mostrarPagina((bloque-1)*this.nroPagxBloq+1);
+		
+	}
+	
+	public void mostrarPagina(int pag) throws SQLException {
+		irAPagina(pag);
+		System.out.println("Bloque: "+this.nroBloque+" de "+this.nroBloques
+		+" con "+this.nroPaginasBloque+" páginas");
+		System.out.println("Página de Bloque: "+this.nroPaginaBloque+" de "+this.nroPaginasBloque);
+		System.out.println("Página: "+pag+" de "+this.getNroPaginas()
+			+" con "+this.nroColumnas+" columnas");
+		for (int l = 1; l <= this.getNroLineasPagina(); l++) {
+			if (l == 1) {
+				//cabecera de datos
+				for (int c = 1; c <= this.nroColumnas; c++) {
+					System.out.print("\t\t"+rsMetaData.getColumnName(c));
+				}
+				System.out.print("\n");
+			} 
+			System.out.print("\t"+this.nroFila+" ");
+			//datos de línea
+			for (int c = 1; c <= this.nroColumnas; c++) {
+				System.out.print("\t"+rs.getString(rsMetaData.getColumnName(c)));
+			}
+			System.out.print("\n");
+			if (l < this.getNroLineasPagina())
+				irAFila(this.nroFila+1);
+		}
+	}
+	public int primeraPagina(){
+		if (this.nroPaginas>0)
+			return 1;
+		else return this.nroPaginas;
+	}
+	public int siguientePagina(){
+		if (this.nroPagina<this.nroPaginas)
+			return this.nroPagina+1;
+		else if (circular)
+			return primeraPagina(); //paginación circular
+		else 
+			return this.nroPagina;
+	}
+	public int paginaAnterior(){
+		if (this.nroPagina>1)
+			return this.nroPagina-1;
+		else if (circular) 
+			return ultimaPagina(); //paginación circular
+		else 
+			return this.nroPagina;
+	}
+	public int ultimaPagina(){
+		return this.nroPaginas;
+	}
+	public int primeraPaginaBloque(){
+		if (this.nroPaginasBloque>0)
+			return 1;
+		else return this.nroPaginasBloque;
+	}
+	public int siguientePaginaBloque(){
+		if (this.nroPaginaBloque<this.nroPaginasBloque)
+			return this.nroPaginaBloque+1;
+		else if (circular) 
+			return primeraPaginaBloque(); //paginación circular
+		else 
+			return this.nroPaginaBloque;
+	}
+	public int paginaAnteriorBloque(){
+		if (this.nroPaginaBloque>1)
+			return this.nroPaginaBloque-1;
+		else if (circular) 
+			return ultimaPaginaBloque(); //paginación circular
+		else
+			return this.nroPaginaBloque;
+	}
+	public int ultimaPaginaBloque(){
+		return this.nroPaginasBloque;
+	}
+	public int primerBloque(){
+		if (this.nroBloques>0)
+			return 1;
+		else return this.nroBloques;
+	}
+	public int siguienteBloque(){
+		if (this.nroBloque<this.nroBloques)
+			return this.nroBloque+1;
+		else if (circular) 
+			return primerBloque(); //paginación circular
+		else
+			return this.nroBloque;
+	}
+	public int bloqueAnterior(){
+		if (this.nroBloque>1)
+			return this.nroBloque-1;
+		else if (circular) 
+			return ultimoBloque(); //paginación circular
+		else 
+			return this.nroBloque;
+	}
+	public int ultimoBloque(){
+		return this.nroBloques;
+	}
 	//lógica
 	private void posicionNroBloque(int nroBloque) throws SQLException {
 		if (nroBloque==0 || nroBloque>nroBloques) {
@@ -171,56 +275,20 @@ public class PaginacionRS {
 			//posicionamos el bloque donde está ubicada la fila
 			this.nroBloque=bloqueDeFila(nroFila);
 			
-//			int nroFilasxBloque=(this.nroLinxPag * this.nroPagxBloq); 
-//			nroBloque = (nroFila/nroFilasxBloque);
-//			if (nroFila%nroFilasxBloque != 0){
-//				nroBloque++;
-//			}
-			
-			
 			//calculamos número de paginas del bloque 
 			this.nroPaginasBloque=paginasDelBloque(this.nroBloque);
-			
-//			this.nroPaginasBloque=nroPagxBloq;
-//			if (nroBloque == nroBloques) {
-//				//ultimo bloque
-//				int nroFilasBloque=(nroFilas-(nroPagxBloq*nroLinxPag*(nroBloque-1)));
-//				this.nroPaginasBloque=nroFilasBloque/nroLinxPag;
-//				if (nroFilasBloque%nroPagxBloq != 0) {
-//					this.nroPaginasBloque++;
-//				}
-//			}
 			
 			//posicionamos la página dentro del bloque
 			this.nroPaginaBloque=paginaDeBloque(nroFila);
 			
-//			nroPaginaBloque = (nroFila-((nroBloque-1)*nroFilasxBloque))/nroLinxPag;
-//			if ((nroFila-((nroBloque-1)*nroFilasxBloque))%nroLinxPag != 0){
-//				nroPaginaBloque++;
-//			}
-			
 			//posicionamos la página absoluta
 			this.nroPagina=paginaDeFila(nroFila);
-//			nroPagina = nroFila/nroLinxPag;
-//			if (nroFila%nroLinxPag != 0){
-//				nroPagina++;
-//			}
 					
 			//posicionamos la linea de la página
 			this.nroLineaPagina=lineaDePagina(nroFila);
-//			nroLineaPagina = nroFila-((nroBloque-1)*nroFilasxBloque)-((nroPaginaBloque-1)*nroLinxPag);
 			
 			//calculamos el número de lineas de la ultima página del ultimo bloque
 			this.nroLineasPagina=lineasDePagina(this.nroPaginaBloque);
-//			nroLineasPagina=nroLinxPag;
-//			if (nroBloque == nroBloques && nroPaginaBloque == nroPaginasBloque) {
-//				//ultimo página del último bloque 
-//				nroLineasPagina=(nroFilas
-//						-(nroPagxBloq*nroLinxPag*(nroBloque-1)) //filas de bloques anteriores
-//						-((nroPaginaBloque-1)*nroLinxPag) //filas de pags anteriores del último bloque 
-//						) //+ (nroLineaPagina-1)
-//						;
-//			}
 			
 			//posicionamos el cursor en la fila
 			rs.absolute(nroFila);
@@ -241,7 +309,6 @@ public class PaginacionRS {
 
 	}
 
-
 	private int lineaDePagina(int fila) {
 		
 		int filasxBloque=(this.nroLinxPag * this.nroPagxBloq); 
@@ -251,7 +318,6 @@ public class PaginacionRS {
 				;
 	}
 
-
 	private int paginaDeFila(int fila) {
 		int pag = fila/this.nroLinxPag;
 		if (fila%this.nroLinxPag != 0){
@@ -259,7 +325,6 @@ public class PaginacionRS {
 		}
 		return pag;
 	}
-
 
 	private int paginaDeBloque(int fila) {
 		
@@ -271,7 +336,6 @@ public class PaginacionRS {
 		return pagBloq;
 	}
 
-
 	private int paginasDelBloque(int bloque) {
 		
 		int pagsBloq=this.nroPagxBloq;
@@ -279,7 +343,7 @@ public class PaginacionRS {
 			//ultimo bloque
 			int filasBloque=(this.nroFilas-(this.nroPagxBloq*this.nroLinxPag*(bloque-1)));
 			pagsBloq=filasBloque/this.nroLinxPag;
-			if (filasBloque%this.nroPagxBloq != 0) {
+			if (filasBloque%this.nroLinxPag != 0) {
 				pagsBloq++;
 			}
 		}
@@ -295,7 +359,6 @@ public class PaginacionRS {
 		}
 		return bloque;
 	}
-
 
 	//getters+setters
 	//cursor
@@ -373,6 +436,7 @@ public class PaginacionRS {
 				+ ", nroColumnas=" + nroColumnas 
 				+ "]";
 	}
+
 	
 	
 }
