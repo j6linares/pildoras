@@ -41,7 +41,9 @@ public class Dml {
 				pst.setString(1, "Julian");
 				MetaDatosDB.leerRs(pst.executeQuery());
 				
-			// cerrar conexion
+			// cerrar statement y conexion
+				st.close();
+				pst.close();
 				conn.close();
 				
 		} catch (SQLException e) {

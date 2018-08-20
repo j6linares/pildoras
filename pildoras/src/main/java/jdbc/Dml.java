@@ -39,6 +39,10 @@ public class Dml {
 				pst.setString(1, "Julián");
 				leerRs(pst.executeQuery());
 				
+			// 6. cerrar Statement y connection
+				st.close();
+				conn.close();
+				
 		} catch (SQLException e) {
 			System.out.println("Error SQL! "+url);
 			System.out.println("SQLState="+e.getSQLState());
@@ -69,7 +73,7 @@ public class Dml {
 	}
 
 	public void setUrl(String url) {
-		this.url = url;
+		Dml.url = url;
 	}
 	
 	

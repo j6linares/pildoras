@@ -1,14 +1,7 @@
 package jdbc.vista;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-
-public class PaginacionRS implements Paginable {
+public class Paginacion implements Paginable {
 	//cursor
-	private ResultSet rs;
-	private ResultSetMetaData rsMetaData;
-	private String cursor;
 	
 	//configuración de la paginación 
 	private int nroLinxPag;
@@ -32,45 +25,39 @@ public class PaginacionRS implements Paginable {
 	private int nroBloques;
 	private int nroPaginas;
 	
-	//constructor
-	public PaginacionRS(ResultSet rs) throws SQLException {
-		//cursor
-		this.rs=rs;
-		rsMetaData=rs.getMetaData();
-		//cursor=rs.getCursorName();
-		
-		//configuracion por defecto
-		nroLinxPag=Integer.MAX_VALUE;
-		nroPagxBloq=Integer.MAX_VALUE;
-		circular=false;
-		
-		//datos del cursor 
-		nroColumnas=rsMetaData.getColumnCount();
-		calcularPaginacion();
+	//constructores
+	public Paginacion() {
+		calcularPaginacion(Integer.MAX_VALUE, Integer.MAX_VALUE, false);
 
 	}
-	
-	//metodos
-	public void recalcularPaginacion(int pagxbloq, int linxpag) throws SQLException{
-		if (pagxbloq==0 || linxpag==0){
-			throw new IndexOutOfBoundsException("Nº de páginas x bloque o lineas x pagina fuera de límite inferior");
-		} else {
-			this.nroPagxBloq=pagxbloq;
-			this.nroLinxPag=linxpag;
-			calcularPaginacion();
-		}
-	
+	public Paginacion(int lineasXpagina) {
+		calcularPaginacion(lineasXpagina, Integer.MAX_VALUE, false);
+
 	}
-	
-	public void calcularPaginacion() throws SQLException{
-		//posicionamos el cursor al ppio
-		rs.beforeFirst();
+	public Paginacion(int lineasXpagina, int paginasXbloque) {
+		calcularPaginacion(lineasXpagina, paginasXbloque, false);
+
+	}
+	public Paginacion(int lineasXpagina, int paginasXbloque, boolean consultaCircular) {
+		calcularPaginacion(lineasXpagina, paginasXbloque, consultaCircular);
+
+	}
+
+	private void calcularPaginacion(int lineasXpagina, int paginasXbloque, boolean consultaCircular) {
+		//cursor
+		datosCursor();
 		
-		if (!rs.next()) {
+		//configuracion por defecto
+		nroLinxPag=lineasXpagina;
+		nroPagxBloq=paginasXbloque;
+		circular=consultaCircular;
+		
+		//datos del cursor 
+		if (!hayDatos()) {
 			//no hay datos en el cursor
 			nroBloques=0;
 			nroPaginas=0;
-			nroFilas=0;
+			//nroFilas=0;
 			
 			//datos de posición
 			nroBloque=0;
@@ -81,11 +68,9 @@ public class PaginacionRS implements Paginable {
 			nroLineasPagina=0;
 			nroFila=0;
 		} else {
-			//estoy en el first=beforeFirst()+next()
-			nroFila=rs.getRow();
-			if (rs.last()){
-				nroFilas=rs.getRow();
-			}
+			//posicionar en el primer dato
+			nroFila=1;
+			
 			nroPaginas=(nroFilas/nroLinxPag);
 			if (nroFilas%nroLinxPag != 0) {
 				nroPaginas++;
@@ -97,6 +82,31 @@ public class PaginacionRS implements Paginable {
 			posicionNroFila(nroFila);
 		}	
 	}
+	
+	private void datosCursor() {
+		//calcula las filas y columnas del cursor
+		this.nroColumnas=10;
+		this.nroFilas=69;
+		
+	}
+
+	//metodos
+	public void recalcularPaginacion(int pagxbloq, int linxpag) {
+		if (pagxbloq<=0 || linxpag<=0){
+			throw new IndexOutOfBoundsException("Nº de páginas x bloque o lineas x pagina fuera de límite inferior");
+		} else {
+			calcularPaginacion(linxpag, pagxbloq, false);
+		}
+	
+	}
+	
+
+	
+	private boolean hayDatos() {
+		//true si hay dtos en el cursor
+		return this.nroFilas!=0;
+	}
+
 	@Override
 	public void irABloque(int bloq) {
 		posicionNroBloque(bloq);
@@ -110,98 +120,22 @@ public class PaginacionRS implements Paginable {
 		posicionNroPaginaBloque(pag);
 	}
 	
-	public void irALinea(int linea) throws SQLException {
+	public void irALinea(int linea) {
 		posicionNroLinea(linea);
 	}
 	
-	public void irAFila(int fila) throws SQLException {
+	public void irAFila(int fila) {
 		posicionNroFila(fila);
 	}
 	
-	public void mostrarPaginaBloque(int pagBloque) throws SQLException {
-		mostrarPagina((this.nroBloque-1)*this.nroPagxBloq+pagBloque);
-		
-	}
-	public void mostrarPrimeraPaginaBloque(int bloque) throws SQLException {
-		mostrarPagina((bloque-1)*this.nroPagxBloq+1);
-		
-	}
 	
-	public void mostrarPagina(int pag) throws SQLException {
-		irAPagina(pag);
-		System.out.println("Bloque: "+this.nroBloque+" de "+this.nroBloques
-		+" con "+this.nroPaginasBloque+" páginas");
-		System.out.println("Página de Bloque: "+this.nroPaginaBloque+" de "+this.nroPaginasBloque);
-		System.out.println("Página: "+pag+" de "+this.getNroPaginas()
-			+" con "+this.nroColumnas+" columnas");
-		for (int l = 1; l <= this.getNroLineasPagina(); l++) {
-			if (l == 1) {
-				//cabecera de datos
-				for (int c = 1; c <= this.nroColumnas; c++) {
-					System.out.print("\t\t"+rsMetaData.getColumnName(c));
-				}
-				System.out.print("\n");
-			} 
-			System.out.print("\t"+this.nroFila+" ");
-			//datos de línea
-			for (int c = 1; c <= this.nroColumnas; c++) {
-				System.out.print("\t"+rs.getString(rsMetaData.getColumnName(c)));
-			}
-			System.out.print("\n");
-			if (l < this.getNroLineasPagina())
-				irAFila(this.nroFila+1);
-		}
-	}
-	public String mostrarPaginaHtml(int pag) throws SQLException {
-		String html="<p>";
-		
-		irAPagina(pag);
-		System.out.println("Bloque: "+this.nroBloque+" de "+this.nroBloques
-		+" con "+this.nroPaginasBloque+" páginas");
-		html+="<br>"+"Bloque: "+this.nroBloque+" de "+this.nroBloques
-				+" con "+this.nroPaginasBloque+" páginas";
-		System.out.println("Página de Bloque: "+this.nroPaginaBloque+" de "+this.nroPaginasBloque);
-		html+="<br>"+"Página de Bloque: "+this.nroPaginaBloque+" de "+this.nroPaginasBloque;
-		System.out.println("Página: "+pag+" de "+this.getNroPaginas()
-			+" con "+this.nroColumnas+" columnas");
-		html+="<br>"+"Página: "+pag+" de "+this.getNroPaginas()
-			+" con "+this.nroColumnas+" columnas";
-		
-		html+="<br>"+"<table style=\"width:100%\">";
-		for (int l = 1; l <= this.getNroLineasPagina(); l++) {
-			
-			if (l == 1) {
-				//cabecera de datos
-				html+="\n"+"<tr>";
-				html+="<th>Nº Fila</th>";
-				for (int c = 1; c <= this.nroColumnas; c++) {
-					html+="<th>"+rsMetaData.getColumnName(c)+"</th>";
-					System.out.print("\t\t"+rsMetaData.getColumnName(c));
-				}
-				html+="</tr>";
-				System.out.print("\n");
-			} 
-			System.out.print("\t"+this.nroFila+" ");
-			html+="\n"+"<tr>";
-			html+="<td>"+this.nroFila+"</td>";
-			//datos de línea
-			for (int c = 1; c <= this.nroColumnas; c++) {
-				html+="<td>"+rs.getString(rsMetaData.getColumnName(c))+"</td>";
-				System.out.print("\t"+rs.getString(rsMetaData.getColumnName(c)));
-			}
-			System.out.print("\n");
-			html+="</tr>";
-			if (l < this.getNroLineasPagina())
-				irAFila(this.nroFila+1);
-		}
-		return html+"</table>";
-	}
 	@Override
 	public int primeraPagina(){
 		if (this.nroPaginas>0)
 			return 1;
 		else return this.nroPaginas;
 	}
+	
 	@Override
 	public int siguientePagina(){
 		if (this.nroPagina<this.nroPaginas)
@@ -211,6 +145,7 @@ public class PaginacionRS implements Paginable {
 		else 
 			return this.nroPagina;
 	}
+	
 	@Override
 	public int paginaAnterior(){
 		if (this.nroPagina>1)
@@ -220,16 +155,19 @@ public class PaginacionRS implements Paginable {
 		else 
 			return this.nroPagina;
 	}
+	
 	@Override
 	public int ultimaPagina(){
 		return this.nroPaginas;
 	}
+	
 	@Override
 	public int primeraPaginaBloque(){
 		if (this.nroPaginasBloque>0)
 			return 1;
 		else return this.nroPaginasBloque;
 	}
+	
 	@Override
 	public int siguientePaginaBloque(){
 		if (this.nroPaginaBloque<this.nroPaginasBloque)
@@ -239,6 +177,7 @@ public class PaginacionRS implements Paginable {
 		else 
 			return this.nroPaginaBloque;
 	}
+	
 	@Override
 	public int paginaAnteriorBloque(){
 		if (this.nroPaginaBloque>1)
@@ -248,16 +187,19 @@ public class PaginacionRS implements Paginable {
 		else
 			return this.nroPaginaBloque;
 	}
+	
 	@Override
 	public int ultimaPaginaBloque(){
 		return this.nroPaginasBloque;
 	}
+	
 	@Override
 	public int primerBloque(){
 		if (this.nroBloques>0)
 			return 1;
 		else return this.nroBloques;
 	}
+	
 	@Override
 	public int siguienteBloque(){
 		if (this.nroBloque<this.nroBloques)
@@ -267,6 +209,7 @@ public class PaginacionRS implements Paginable {
 		else
 			return this.nroBloque;
 	}
+	
 	@Override
 	public int bloqueAnterior(){
 		if (this.nroBloque>1)
@@ -276,10 +219,12 @@ public class PaginacionRS implements Paginable {
 		else 
 			return this.nroBloque;
 	}
+	
 	@Override
 	public int ultimoBloque(){
 		return this.nroBloques;
 	}
+	
 	//lógica
 	private void posicionNroBloque(int nroBloque) {
 		if (nroBloque==0 || nroBloque>nroBloques) {
@@ -314,7 +259,7 @@ public class PaginacionRS implements Paginable {
 	}
 	
 	private void posicionNroFila(int nroFila) {
-		if (nroFila==0 || nroFila>nroFilas) {
+		if (nroFila<=0 || nroFila>nroFilas) {
 			nroBloque=0;
 			nroPaginaBloque=0;
 			nroPaginasBloque=0;
@@ -345,13 +290,6 @@ public class PaginacionRS implements Paginable {
 			
 			//calculamos el número de lineas de la ultima página del ultimo bloque
 			this.nroLineasPagina=lineasDePagina(this.nroPaginaBloque);
-			
-			//posicionamos el cursor en la fila
-			try {
-				rs.absolute(nroFila);
-			} catch (SQLException sqle) {
-				throw new IndexOutOfBoundsException(sqle.getMessage());
-			}
 			
 		}
 	}
@@ -422,9 +360,7 @@ public class PaginacionRS implements Paginable {
 
 	//getters+setters
 	//cursor
-	public String getCursor() {
-		return cursor;
-	}
+	
 	//configura paginacion
 	public int getNroLinxPag() {
 		return nroLinxPag;
@@ -445,14 +381,17 @@ public class PaginacionRS implements Paginable {
 	public int getNroColumnas() {
 		return nroColumnas;
 	}
+	
 	@Override
 	public int getNroFilas() {
 		return nroFilas;
 	}
+	
 	@Override
 	public int getNroPaginas() {
 		return nroPaginas;
 	}
+	
 	@Override
 	public int getNroBloques() {
 		return nroBloques;
@@ -464,28 +403,44 @@ public class PaginacionRS implements Paginable {
 		return nroBloque;
 	}
 	@Override
+	
 	public int getNroPaginaBloque() {
 		return nroPaginaBloque;
 	}
+	
 	@Override
 	public int getNroPaginasBloque() {
 		return nroPaginasBloque;
 	}
+	
 	@Override
 	public int getNroPagina() {
 		return nroPagina;
 	}
+	
 	@Override
 	public int getNroLineaPagina() {
 		return nroLineaPagina;
 	}
+	
 	@Override
 	public int getNroLineasPagina() {
 		return nroLineasPagina;
 	}
+	
 	@Override
 	public int getNroFila() {
 		return nroFila;
+	}
+
+	@Override
+	public int getNroPaginasxBloque() {
+		return this.nroPagxBloq;
+	}
+
+	@Override
+	public int getNroLineasxPagina() {
+		return this.nroLinxPag;
 	}
 
 	//toString
@@ -507,17 +462,4 @@ public class PaginacionRS implements Paginable {
 				+ ", nroColumnas=" + nroColumnas 
 				+ "]";
 	}
-
-	@Override
-	public int getNroPaginasxBloque() {
-		return this.nroPagxBloq;
-	}
-
-	@Override
-	public int getNroLineasxPagina() {
-		return this.nroLinxPag;
-	}
-
-	
-	
 }
