@@ -239,6 +239,7 @@ public class PaginacionRS implements Paginable {
 		else 
 			return this.nroPaginaBloque;
 	}
+	
 	@Override
 	public int paginaAnteriorBloque(){
 		if (this.nroPaginaBloque>1)
@@ -248,16 +249,19 @@ public class PaginacionRS implements Paginable {
 		else
 			return this.nroPaginaBloque;
 	}
+	
 	@Override
 	public int ultimaPaginaBloque(){
 		return this.nroPaginasBloque;
 	}
+	
 	@Override
 	public int primerBloque(){
 		if (this.nroBloques>0)
 			return 1;
 		else return this.nroBloques;
 	}
+	
 	@Override
 	public int siguienteBloque(){
 		if (this.nroBloque<this.nroBloques)
@@ -267,6 +271,7 @@ public class PaginacionRS implements Paginable {
 		else
 			return this.nroBloque;
 	}
+	
 	@Override
 	public int bloqueAnterior(){
 		if (this.nroBloque>1)
@@ -276,10 +281,12 @@ public class PaginacionRS implements Paginable {
 		else 
 			return this.nroBloque;
 	}
+	
 	@Override
 	public int ultimoBloque(){
 		return this.nroBloques;
 	}
+	
 	//l�gica
 	private void posicionNroBloque(int nroBloque) {
 		if (nroBloque==0 || nroBloque>nroBloques) {

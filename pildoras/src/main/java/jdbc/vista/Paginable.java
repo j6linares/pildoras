@@ -5,7 +5,7 @@ public interface Paginable {
 	public abstract int getNroPaginasxBloque();
 	public abstract int getNroLineasxPagina();
 
-	public abstract void irAPagina(int pagina) throws IndexOutOfBoundsException;
+	public abstract void irAPagina(int pagina);
 	public abstract int primeraPagina();
 	public abstract int siguientePagina();
 	public abstract int paginaAnterior();
@@ -13,7 +13,7 @@ public interface Paginable {
 	
 	public abstract int getNroPaginas();
 
-	public abstract void irAPaginaBloque(int pagina) throws IndexOutOfBoundsException;
+	public abstract void irAPaginaBloque(int pagina);
 	public abstract int primeraPaginaBloque();
 	public abstract int siguientePaginaBloque();
 	public abstract int paginaAnteriorBloque();
@@ -21,7 +21,7 @@ public interface Paginable {
 	
 	public abstract int getNroPaginasBloque();
 	
-	public abstract void irABloque(int pagina) throws IndexOutOfBoundsException;
+	public abstract void irABloque(int bloque);
 	public abstract int primerBloque();
 	public abstract int siguienteBloque();
 	public abstract int bloqueAnterior();

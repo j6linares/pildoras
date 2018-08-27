@@ -1,6 +1,8 @@
 package jdbc.vista;
 
-public class Paginacion implements Paginable {
+import java.util.zip.DataFormatException;
+
+public abstract class Paginacion implements Paginable {
 	//cursor
 	
 	//configuración de la paginación 
@@ -27,29 +29,43 @@ public class Paginacion implements Paginable {
 	
 	//constructores
 	public Paginacion() {
-		calcularPaginacion(Integer.MAX_VALUE, Integer.MAX_VALUE, false);
+		//filas y columnas
+		this.nroColumnas=0;
+		this.nroFilas=0;
+	}
+	
+	public Paginacion(int filas, int columnas) throws DataFormatException {
+		if (filas<=0 || columnas<=0){
+			throw new DataFormatException("Nº de filas o columnas negativas");
+		} 
+		//filas y columnas a paginar
+		this.nroColumnas=columnas;
+		this.nroFilas=filas;
+
+		calcularPaginacion(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
 	}
-	public Paginacion(int lineasXpagina) {
-		calcularPaginacion(lineasXpagina, Integer.MAX_VALUE, false);
+	
+	//metodos
+	public void paginacion(int filas, int columnas) {
+		//filas y columnas a paginar
+		this.nroColumnas=columnas;
+		this.nroFilas=filas;
 
+		calcularPaginacion(Integer.MAX_VALUE, Integer.MAX_VALUE);
 	}
-	public Paginacion(int lineasXpagina, int paginasXbloque) {
-		calcularPaginacion(lineasXpagina, paginasXbloque, false);
-
+	
+	public void calcularPaginacion(int linxpag, int pagxbloq) {
+		calcularPaginacion(linxpag, pagxbloq, false);
 	}
-	public Paginacion(int lineasXpagina, int paginasXbloque, boolean consultaCircular) {
-		calcularPaginacion(lineasXpagina, paginasXbloque, consultaCircular);
-
-	}
-
-	private void calcularPaginacion(int lineasXpagina, int paginasXbloque, boolean consultaCircular) {
-		//cursor
-		datosCursor();
-		
+	
+	public void calcularPaginacion(int lineasXpagina, int paginasXbloque, boolean consultaCircular) {
+		if (paginasXbloque<=0 || lineasXpagina<=0){
+			throw new IndexOutOfBoundsException("Nº de páginas x bloque o lineas x pagina fuera de límite inferior");
+		} 
 		//configuracion por defecto
-		nroLinxPag=lineasXpagina;
-		nroPagxBloq=paginasXbloque;
+		this.setNroLinxPag(lineasXpagina);
+		this.setNroPagxBloq(paginasXbloque);
 		circular=consultaCircular;
 		
 		//datos del cursor 
@@ -83,28 +99,9 @@ public class Paginacion implements Paginable {
 		}	
 	}
 	
-	private void datosCursor() {
-		//calcula las filas y columnas del cursor
-		this.nroColumnas=10;
-		this.nroFilas=69;
-		
-	}
-
-	//metodos
-	public void recalcularPaginacion(int pagxbloq, int linxpag) {
-		if (pagxbloq<=0 || linxpag<=0){
-			throw new IndexOutOfBoundsException("Nº de páginas x bloque o lineas x pagina fuera de límite inferior");
-		} else {
-			calcularPaginacion(linxpag, pagxbloq, false);
-		}
-	
-	}
-	
-
-	
 	private boolean hayDatos() {
-		//true si hay dtos en el cursor
-		return this.nroFilas!=0;
+		//true si hay datos en el cursor
+		return this.nroFilas>0;
 	}
 
 	@Override
@@ -131,98 +128,116 @@ public class Paginacion implements Paginable {
 	
 	@Override
 	public int primeraPagina(){
+		int pag=this.nroPaginas;
 		if (this.nroPaginas>0)
-			return 1;
-		else return this.nroPaginas;
+			pag=1;
+		posicionNroPagina(pag); 
+		return pag;
 	}
 	
 	@Override
 	public int siguientePagina(){
+		int pag=this.nroPagina;
 		if (this.nroPagina<this.nroPaginas)
-			return this.nroPagina+1;
+			pag= this.nroPagina+1;
 		else if (circular)
-			return primeraPagina(); //paginación circular
-		else 
-			return this.nroPagina;
+			pag= primeraPagina(); //paginación circular
+		posicionNroPagina(pag); 
+		return pag;
 	}
 	
 	@Override
 	public int paginaAnterior(){
+		int pag=this.nroPagina;
 		if (this.nroPagina>1)
-			return this.nroPagina-1;
+			pag= this.nroPagina-1;
 		else if (circular) 
-			return ultimaPagina(); //paginación circular
-		else 
-			return this.nroPagina;
+			pag= ultimaPagina(); //paginación circular
+		posicionNroPagina(pag); 
+		return pag;
 	}
 	
 	@Override
 	public int ultimaPagina(){
-		return this.nroPaginas;
+		int pag=this.nroPaginas;
+		posicionNroPagina(pag);
+		return pag;
 	}
 	
 	@Override
 	public int primeraPaginaBloque(){
+		int pag=this.nroPaginasBloque;
 		if (this.nroPaginasBloque>0)
-			return 1;
-		else return this.nroPaginasBloque;
+			pag=1;
+		posicionNroPaginaBloque(pag); 
+		return pag;
 	}
 	
 	@Override
 	public int siguientePaginaBloque(){
+		int pag=this.nroPaginaBloque;
 		if (this.nroPaginaBloque<this.nroPaginasBloque)
-			return this.nroPaginaBloque+1;
+			pag= this.nroPaginaBloque+1;
 		else if (circular) 
-			return primeraPaginaBloque(); //paginación circular
-		else 
-			return this.nroPaginaBloque;
+			pag= primeraPaginaBloque(); //paginación circular
+		posicionNroPaginaBloque(pag); 
+		return pag;
 	}
 	
 	@Override
 	public int paginaAnteriorBloque(){
+		int pag=this.nroPaginaBloque;
 		if (this.nroPaginaBloque>1)
-			return this.nroPaginaBloque-1;
+			pag= this.nroPaginaBloque-1;
 		else if (circular) 
-			return ultimaPaginaBloque(); //paginación circular
-		else
-			return this.nroPaginaBloque;
+			pag= ultimaPaginaBloque(); //paginación circular
+		posicionNroPaginaBloque(pag);
+		return pag;
 	}
 	
 	@Override
 	public int ultimaPaginaBloque(){
-		return this.nroPaginasBloque;
+		int pag=this.nroPaginasBloque;
+		posicionNroPaginaBloque(pag);
+		return pag;
 	}
 	
 	@Override
 	public int primerBloque(){
+		int bloq=this.nroBloques;
 		if (this.nroBloques>0)
-			return 1;
-		else return this.nroBloques;
+			bloq= 1;
+		posicionNroBloque(bloq); 
+		return bloq; 
 	}
 	
 	@Override
 	public int siguienteBloque(){
+		int bloq=this.nroBloque;
 		if (this.nroBloque<this.nroBloques)
-			return this.nroBloque+1;
+			bloq= this.nroBloque+1;
 		else if (circular) 
-			return primerBloque(); //paginación circular
-		else
-			return this.nroBloque;
+			bloq= primerBloque(); //paginación circular
+		posicionNroBloque(bloq);
+		return bloq;
 	}
 	
 	@Override
 	public int bloqueAnterior(){
+		int bloq=this.nroBloque;
 		if (this.nroBloque>1)
-			return this.nroBloque-1;
+			bloq= this.nroBloque-1;
 		else if (circular) 
-			return ultimoBloque(); //paginación circular
-		else 
-			return this.nroBloque;
+			bloq= ultimoBloque(); //paginación circular
+		posicionNroBloque(bloq); 
+		return bloq;
 	}
 	
 	@Override
 	public int ultimoBloque(){
-		return this.nroBloques;
+		int bloq=this.nroBloques;
+		posicionNroBloque(bloq);
+		return bloq;
 	}
 	
 	//lógica
@@ -291,8 +306,12 @@ public class Paginacion implements Paginable {
 			//calculamos el número de lineas de la ultima página del ultimo bloque
 			this.nroLineasPagina=lineasDePagina(this.nroPaginaBloque);
 			
+			//posicionar el cursor
+			posicionarEnFila();
 		}
 	}
+
+	public abstract void posicionarEnFila() ;
 
 	private int lineasDePagina(int paginaBloque) {
 		int lineasPag=this.nroLinxPag;
@@ -308,10 +327,14 @@ public class Paginacion implements Paginable {
 	}
 
 	private int lineaDePagina(int fila) {
-		
-		int filasxBloque=(this.nroLinxPag * this.nroPagxBloq); 
-		return fila
-				-((this.nroBloque-1)*filasxBloque)
+		long nroFilasxBloque = ((long) this.nroLinxPag) * this.nroPagxBloq;
+	    if (nroFilasxBloque > Integer.MAX_VALUE
+	    		|| nroFilasxBloque < Integer.MIN_VALUE) {
+	    	nroFilasxBloque=Integer.MAX_VALUE;
+	    }
+	    
+	   return fila
+				-((this.nroBloque-1)*(int) nroFilasxBloque)
 				-((this.nroPaginaBloque-1)*this.nroLinxPag)
 				;
 	}
@@ -326,9 +349,14 @@ public class Paginacion implements Paginable {
 
 	private int paginaDeBloque(int fila) {
 		
-		int filasxBloque=(this.nroLinxPag * this.nroPagxBloq); 
-		int pagBloq = (fila-((this.nroBloque-1)*filasxBloque))/this.nroLinxPag;
-		if ((fila-((this.nroBloque-1)*filasxBloque))%this.nroLinxPag != 0){
+		long nroFilasxBloque = ((long) this.nroLinxPag) * this.nroPagxBloq;
+	    if (nroFilasxBloque > Integer.MAX_VALUE
+	    		|| nroFilasxBloque < Integer.MIN_VALUE) {
+	    	nroFilasxBloque=Integer.MAX_VALUE;
+	    }
+	    
+		int pagBloq = (fila-((this.nroBloque-1)*(int) nroFilasxBloque))/this.nroLinxPag;
+		if ((fila-((this.nroBloque-1)*(int) nroFilasxBloque))%this.nroLinxPag != 0){
 			pagBloq++;
 		}
 		return pagBloq;
@@ -350,8 +378,12 @@ public class Paginacion implements Paginable {
 		 
 	private int bloqueDeFila(int fila) {
 		
-		int nroFilasxBloque=(this.nroLinxPag * this.nroPagxBloq); 
-		int bloque = (fila / nroFilasxBloque);
+		long nroFilasxBloque = ((long) this.nroLinxPag) * this.nroPagxBloq;
+	    if (nroFilasxBloque > Integer.MAX_VALUE
+	    		|| nroFilasxBloque < Integer.MIN_VALUE) {
+	    	nroFilasxBloque=Integer.MAX_VALUE;
+	    }
+	    int bloque = (fila / (int) nroFilasxBloque);
 		if (fila % nroFilasxBloque != 0){
 			bloque++;
 		}
@@ -365,14 +397,14 @@ public class Paginacion implements Paginable {
 	public int getNroLinxPag() {
 		return nroLinxPag;
 	}
-	public void setNroLinxPag(int nroLinxPag) {
+	private void setNroLinxPag(int nroLinxPag) {
 		this.nroLinxPag = nroLinxPag;
 	}
 
 	public int getNroPagxBloq() {
 		return nroPagxBloq;
 	}
-	public void setNroPagxBloq(int nroPagxBloq) {
+	private void setNroPagxBloq(int nroPagxBloq) {
 		this.nroPagxBloq = nroPagxBloq;
 	}
 
@@ -446,7 +478,7 @@ public class Paginacion implements Paginable {
 	//toString
 	@Override
 	public String toString() {
-		return "PaginacionRS ["
+		return "Paginacion ["
 				+ ", nroFila=" + nroFila
 				+ ", nroFilas=" + nroFilas 
 				+ ", nroLineaPagina=" + nroLineaPagina 
